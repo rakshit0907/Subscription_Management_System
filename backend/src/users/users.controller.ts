@@ -21,7 +21,7 @@ export class UsersController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.ADMIN)
   list(@Query() query: ListUsersDto) {
     return this.users.list(query);
   }

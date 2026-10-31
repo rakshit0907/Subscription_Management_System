@@ -1,5 +1,16 @@
-import { Body, Controller, Get, HttpCode, Patch, Post, Res } from '@nestjs/common';
+
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Patch,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -7,14 +18,24 @@ import { Public } from '../common/decorators/public.decorator';
 import { AuthUser } from '../common/types/auth-user';
 import { ACCESS_COOKIE } from './auth.constants';
 import { AuthService } from './auth.service';
-import { ForgotPasswordDto, LoginDto, ResetPasswordDto, SignupDto, UpdateProfileDto } from './dto/signup.dto';
+import {
+  ForgotPasswordDto,
+  LoginDto,
+  ResetPasswordDto,
+  SignupDto,
+  UpdateProfileDto,
+} from './dto/signup.dto';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly auth: AuthService, private readonly config: ConfigService) {}
+  constructor(
+    private readonly auth: AuthService,
+    private readonly config: ConfigService,
+  ) {}
 
   @Public()
+  @UseGuards(ThrottlerGuard)
   @Post('signup')
   async signup(@Body() dto: SignupDto, @Res({ passthrough: true }) res: Response) {
     const { user, token } = await this.auth.signup(dto);
@@ -23,6 +44,7 @@ export class AuthController {
   }
 
   @Public()
+  @UseGuards(ThrottlerGuard)
   @HttpCode(200)
   @Post('login')
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
@@ -40,6 +62,7 @@ export class AuthController {
   }
 
   @Public()
+  @UseGuards(ThrottlerGuard)
   @HttpCode(200)
   @Post('forgot-password')
   forgotPassword(@Body() dto: ForgotPasswordDto) {
@@ -47,6 +70,7 @@ export class AuthController {
   }
 
   @Public()
+  @UseGuards(ThrottlerGuard)
   @HttpCode(200)
   @Post('reset-password')
   resetPassword(@Body() dto: ResetPasswordDto) {
@@ -59,7 +83,7 @@ export class AuthController {
     return { user: await this.auth.getProfile(user.id) };
   }
 
-  /** Lets any logged-in user (used by the customer portal "profile" page) edit their own details. */
+  /** Lets any logged-in user edit their own details. */
   @ApiCookieAuth()
   @Patch('profile')
   async updateProfile(@CurrentUser() user: AuthUser, @Body() dto: UpdateProfileDto) {
@@ -76,7 +100,7 @@ export class AuthController {
   }
 
   private setCookie(res: Response, token: string) {
-    const maxAge = Number(this.config.get<string>('COOKIE_MAX_AGE_MS') ?? 86_400_000);
+    const maxAge = Number(this.config.get<string>('COOKIE_MAX_AGE_MS') ?? 86400000);
     res.cookie(ACCESS_COOKIE, token, { ...this.cookieBase(), maxAge });
   }
 }
