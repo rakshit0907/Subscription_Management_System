@@ -9,7 +9,7 @@ import { validateEnv } from './config/env.validation';
 import { MailModule } from './mail/mail.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { UsersModule } from './users/users.module';
-
+import { HealthModule } from './health/health.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
@@ -18,6 +18,7 @@ import { UsersModule } from './users/users.module';
     MailModule,
     AuthModule,
     UsersModule,
+    HealthModule,
     // Phase 2+ modules (products, plans, taxes, discounts, templates, subscriptions, invoices, ...) are added here.
   ],
   providers: [
