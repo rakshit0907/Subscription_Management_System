@@ -1,3 +1,4 @@
+
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
@@ -22,7 +23,7 @@ import { HealthModule } from './health/health.module';
     // Phase 2+ modules (products, plans, taxes, discounts, templates, subscriptions, invoices, ...) are added here.
   ],
   providers: [
-    // Order matters: authenticate first, then check roles. Every route is protected by default.
+    // Order matters: authenticate first, then check roles.
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],
